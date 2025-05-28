@@ -1,0 +1,30 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+    id db '2022100010048$'
+    separator db ' - $'
+    student_name db 'Motiur Rahman$'  ; Changed from 'name' to 'student_name'
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+    
+    ; Print ID
+    MOV AH, 09h        ; Function to print string
+    LEA DX, id         ; Load address of id
+    INT 21h            ; Print it
+    
+    ; Print separator
+    LEA DX, separator  ; Load address of hyphen
+    INT 21h            ; Print it
+    
+    ; Print Name
+    LEA DX, student_name  ; Changed from 'name' to 'student_name'
+    INT 21h               ; Print it
+    
+    ; Exit program
+    MOV AH, 4Ch
+    INT 21h
+MAIN ENDP
+END MAIN

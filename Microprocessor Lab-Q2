@@ -1,0 +1,47 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+    prompt db 'Enter your nickname (UPPERCASE, 5 letters): $'
+    result db 0DH,0AH,'Your nickname in lowercase: $'
+    nickname db 6 DUP('$')  ; 5 chars + 1 for terminator
+    length equ 5            ; Fixed length of nickname
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; Display prompt
+    MOV AH, 09H
+    LEA DX, prompt
+    INT 21H
+
+    ; Input nickname (fixed length)
+    MOV CX, length        ; Set counter for 5 characters
+    LEA SI, nickname      ; Point to nickname buffer
+    MOV AH, 01H           ; Function for character input
+
+INPUT_LOOP:
+    INT 21H               ; Read character
+    ADD AL, 20H           ; Convert to lowercase (ASCII trick)
+    MOV [SI], AL          ; Store converted character
+    INC SI                ; Move to next position
+    LOOP INPUT_LOOP       ; Repeat for all characters
+
+    ; Null terminate the string
+    MOV BYTE PTR [SI], '$'
+
+    ; Display result message
+    MOV AH, 09H
+    LEA DX, result
+    INT 21H
+
+    ; Display converted nickname
+    LEA DX, nickname
+    INT 21H
+
+    ; Exit program
+    MOV AH, 4CH
+    INT 21H
+MAIN ENDP
+END MAIN

@@ -1,0 +1,85 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+    id db '2022100010048$'   ; Your full ID
+    output db '| **    | **    | **    | **    |$'  ; Single output string
+    digit db ?               ; Temporary storage for each digit
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; Point to last 4 digits of ID (positions 9-12 in the string)
+    MOV SI, OFFSET id + 9    ; Adjust based on your ID length
+    
+    ; Replace the '' patterns with actual digits
+    MOV DI, OFFSET output + 3  ; First digit position
+    
+    ; Process first digit
+    MOV AL, [SI]
+    MOV [DI], AL
+    MOV [DI+1], AL
+    
+    ; Process second digit
+    MOV AL, [SI+1]
+    MOV [DI+8], AL
+    MOV [DI+9], AL
+    
+    ; Process third digit
+    MOV AL, [SI+2]
+    MOV [DI+16], AL
+    MOV [DI+17], AL
+    
+    ; Process fourth digit
+    MOV AL, [SI+3]
+    MOV [DI+24], AL
+    MOV [DI+25], AL
+    
+    ; Print the header line with digits
+    MOV AH, 09H
+    MOV DX, OFFSET output
+    INT 21H
+    
+    ; Print newline
+    MOV AH, 02H
+    MOV DL, 0DH
+    INT 21H
+    MOV DL, 0AH
+    INT 21H
+    
+    ; Print the 5 lines of stars
+    MOV CX, 5                ; Number of lines to print
+PRINT_STARS:
+    PUSH CX                  ; Save counter
+    
+    ; Print star line
+    MOV AH, 09H
+    MOV DX, OFFSET output
+    ; Replace digits with stars
+    MOV BYTE PTR [DI], '*'
+    MOV BYTE PTR [DI+1], '*'
+    MOV BYTE PTR [DI+8], '*'
+    MOV BYTE PTR [DI+9], '*'
+    MOV BYTE PTR [DI+16], '*'
+    MOV BYTE PTR [DI+17], '*'
+    MOV BYTE PTR [DI+24], '*'
+    MOV BYTE PTR [DI+25], '*'
+    
+    INT 21H                 ; Print the line
+    
+    ; Print newline
+    MOV AH, 02H
+    MOV DL, 0DH
+    INT 21H
+    MOV DL, 0AH
+    INT 21H
+    
+    POP CX                   ; Restore counter
+    LOOP PRINT_STARS
+    
+    ; Exit program
+    MOV AH, 4CH
+    INT 21H
+MAIN ENDP
+END MAIN

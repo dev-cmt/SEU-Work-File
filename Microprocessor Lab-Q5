@@ -1,0 +1,114 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+    HEX_INPUT DB 5 DUP('$')  ; To store the 4-digit hex input + null terminator
+    BINARY_OUTPUT DB 17 DUP('$') ; To store the 16-bit binary output + null terminator
+    MSG1 DB 'Enter a 4-digit hexadecimal number: $'
+    MSG2 DB 'Binary value: $'
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; Display prompt message
+    LEA DX, MSG1
+    MOV AH, 09H
+    INT 21H
+
+    ; Read hex input
+    LEA DX, HEX_INPUT
+    MOV AH, 0AH
+    INT 21H
+
+    ; Prepare to process each hex digit
+    LEA SI, HEX_INPUT + 2 ; Skip the first two bytes (length and carriage return)
+    LEA DI, BINARY_OUTPUT
+    MOV CX, 4             ; Process 4 digits
+
+PROCESS_DIGIT:
+    MOV DL, [SI]          ; Load current hex digit
+    INC SI                ; Move to next digit
+
+    ; Convert hex digit to 4-bit binary
+    CMP DL, '0'
+    JB INVALID_DIGIT
+    CMP DL, '9'
+    JBE DIGIT_0_9
+    CMP DL, 'A'
+    JB INVALID_DIGIT
+    CMP DL, 'F'
+    JBE DIGIT_A_F_UPPER
+    CMP DL, 'a'
+    JB INVALID_DIGIT
+    CMP DL, 'f'
+    JBE DIGIT_A_F_LOWER
+    JMP INVALID_DIGIT
+
+DIGIT_0_9:
+    SUB DL, '0'
+    JMP CONVERT_TO_BINARY
+
+DIGIT_A_F_UPPER:
+    SUB DL, 'A' - 10
+    JMP CONVERT_TO_BINARY
+
+DIGIT_A_F_LOWER:
+    SUB DL, 'a' - 10
+    JMP CONVERT_TO_BINARY
+
+INVALID_DIGIT:
+    ; Handle invalid digit (optional)
+    JMP END_PROCESS
+
+CONVERT_TO_BINARY:
+    ; Convert the 4-bit value in DL to binary string
+    MOV BL, DL
+    MOV DH, 4             ; 4 bits per digit
+
+CONVERT_BIT:
+    ROL BL, 1             ; Rotate left to get the next bit into CF
+    JC BIT_IS_1
+    MOV AL, '0'
+    JMP STORE_BIT
+
+BIT_IS_1:
+    MOV AL, '1'
+
+STORE_BIT:
+    MOV [DI], AL
+    INC DI
+    DEC DH
+    JNZ CONVERT_BIT
+
+    LOOP PROCESS_DIGIT
+
+END_PROCESS:
+    ; Null-terminate the binary string
+    MOV BYTE PTR [DI], '$'
+
+    ; Display the binary output
+    CALL NEW_LINE
+    LEA DX, MSG2
+    MOV AH, 09H
+    INT 21H
+
+    LEA DX, BINARY_OUTPUT
+    MOV AH, 09H
+    INT 21H
+
+    ; Exit program
+    MOV AH, 4CH
+    INT 21H
+
+MAIN ENDP
+
+NEW_LINE PROC
+    MOV AH, 02H
+    MOV DL, 0DH
+    INT 21H
+    MOV DL, 0AH
+    INT 21H
+    RET
+NEW_LINE ENDP
+
+END MAIN

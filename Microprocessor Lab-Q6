@@ -1,0 +1,76 @@
+.MODEL SMALL
+.STACK 100H
+
+.DATA
+    PROMPT DB 'Input: $'
+    PAL DB ' is palindrome$'
+    NOTPAL DB ' is not palindrome$'
+    STR DB 100 DUP('$')
+
+.CODE
+START:
+    MOV AX, @DATA
+    MOV DS, AX
+    
+    ; Get input
+    MOV AH, 9
+    LEA DX, PROMPT
+    INT 21H
+    
+    MOV SI, OFFSET STR
+READ:
+    MOV AH, 1
+    INT 21H
+    CMP AL, 13
+    JE CHECK
+    MOV [SI], AL
+    INC SI
+    JMP READ
+
+CHECK:
+    MOV DI, OFFSET STR
+    DEC SI
+    
+    CMP DI, SI
+    JAE YES
+    
+COMPARE:
+    MOV AL, [DI]
+    MOV BL, [SI]
+    
+    ; Case-insensitive compare
+    CMP AL, 'a'
+    JB SKIP1
+    CMP AL, 'z'
+    JA SKIP1
+    SUB AL, 32
+SKIP1:
+    CMP BL, 'a'
+    JB SKIP2
+    CMP BL, 'z'
+    JA SKIP2
+    SUB BL, 32
+SKIP2:
+    
+    CMP AL, BL
+    JNE NO
+    
+    INC DI
+    DEC SI
+    CMP DI, SI
+    JB COMPARE
+    
+YES:
+    LEA DX, PAL
+    JMP PRINT
+    
+NO:
+    LEA DX, NOTPAL
+    
+PRINT:
+    MOV AH, 9
+    INT 21H
+    
+    MOV AH, 4CH
+    INT 21H
+END START
