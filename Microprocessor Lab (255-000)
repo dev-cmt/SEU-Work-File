@@ -1,0 +1,53 @@
+.MODEL TINY
+.DATA
+    A DB '2'   
+    B DB '5'    
+    C DB '5'  
+.CODE
+MAIN PROC
+    MOV AH, 02  
+    MOV CL, 255 
+
+PRINTABC:
+    MOV DL, A  
+    INT 21H
+
+    MOV DL, B   
+    INT 21H
+
+    MOV DL, C   
+    INT 21H
+
+    DEC CL     
+    CMP CL, -1  
+    JE FINISH
+    
+    MOV DL, ','  ; print comma
+    INT 21H
+    
+    MOV DL, ' ' 
+    INT 21H
+
+    CMP C, '0'  
+    JE RESET_TWO_DIGIT
+    DEC C       
+    JMP PRINTABC
+
+RESET_TWO_DIGIT:
+    MOV C, '9'  
+    CMP B, '0' 
+    JE RESET_THREE_DIGIT
+    DEC B      
+    JMP PRINTABC
+
+RESET_THREE_DIGIT:
+    MOV B, '9' 
+    DEC A      
+    JMP PRINTABC
+
+FINISH:
+    MOV AH, 4CH 
+    INT 21H
+
+MAIN ENDP
+END MAIN

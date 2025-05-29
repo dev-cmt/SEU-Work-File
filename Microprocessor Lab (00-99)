@@ -1,0 +1,42 @@
+.MODEL TINY
+.DATA
+    A DB '0'
+    B DB '0'
+    C DB '0'
+
+.CODE
+MAIN PROC
+    MOV AH, 02H
+    MOV CL, 101
+
+PRINTAB:        
+    MOV DL, A
+    INT 21H  
+    MOV DL, B
+    INT 21H  
+    MOV DL, ' '
+    INT 21H 
+         
+DEC CL
+    CMP CL, -1
+    JE FINISH 
+
+    MOV DL, ','  ; print comma
+    INT 21H
+    
+    MOV DL, ' ' 
+    INT 21H
+     
+    CMP B, '9'
+    JE RESET
+    INC B
+    JNE PRINTAB  
+
+RESET:
+    MOV B, '0'
+    INC A
+
+    JMP PRINTAB  
+FINISH:
+
+END
